@@ -8,10 +8,11 @@ import helmet from "helmet";
 import morgan from "morgan";
 import path from "path";
 import { fileURLToPath } from "url";
+import { register } from "./controllers/auth.js";
+ 
 
-/* CONFIGURATION */
 const __filename = fileURLToPath(import.meta.url);
-const _dirname = path.dirname(_filename);
+const __dirname = path.dirname(__filename);
 dotenv.config();
 const app = express();
 app.use(express.json());
@@ -24,7 +25,7 @@ app.use(cors());
 app.use("/assets", express.static(path.join(__dirname, "public/assets")));
 
 
-/* FILE STORAGE */
+
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, "public/assets");  //when someone upload file in our website then it gona save here in this particular destination
@@ -35,14 +36,25 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage }); //that gona help us to save
 
-/* MONGOOSE SETUP */
+
+
+
+// ROUTES WITH FILES
+app.post("/auth/register", upload.single("picture"), register)
+
+
+
+
+
+
 const PORT = process.env.PORT || 6001;
 mongoose.connect(process.env.MONGO_URL, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
 
-})
-    .then(() => { 
+}).then(() => { 
         app.listen(PORT, () => console.log('Server Port:  ${PORT}'));
     })
-    .catch((error) => console.log('${error} did not connect'));
+    .catch((error) => console.log(`${error} did not connect`));
+
+
