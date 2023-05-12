@@ -1,37 +1,68 @@
-import { BrowserRouter, Navigate, Routes, Route } from "react-router-dom";
-import HomePage from "scenes/homePage";
-import LoginPage from "scenes/loginPage";
-import ProfilePage from "scenes/profilePage";
-import { useMemo } from "react";
-import { useSelector } from "react-redux";
-import { CssBaseline, ThemeProvider } from "@mui/material";
-import { createTheme } from "@mui/material/styles";
-import { themeSettings } from "./theme";
+import "@mui/material";
+import "react-icons";
+import "react-icons/bi";
+import "react-icons/md";
+import "react-icons/bs";
+import "react-router-dom";
+import { CssBaseline } from "@mui/material";
+import { ThemeProvider } from "@mui/material/styles";
+
+import {
+  BrowserRouter,
+  Route,
+  Routes,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
+import theme from "./theme";
+
+import PostView from "./components/views/PostView";
+import CreatePostView from "./components/views/CreatePostView";
+import ProfileView from "./components/views/ProfileView";
+import LoginView from "./components/views/LoginView";
+import SignupView from "./components/views/SignupView";
+import ExploreView from "./components/views/ExploreView";
+import PrivateRoute from "./components/PrivateRoute";
+import SearchView from "./components/views/SearchView";
+import MessengerView from "./components/views/MessengerView";
+import { initiateSocketConnection, socket } from "./helpers/socketHelper";
+import { useEffect } from "react";
+import { BASE_URL } from "./config";
+import { io } from "socket.io-client";
 
 function App() {
-  const mode = useSelector((state) => state.mode);
-  const theme = useMemo(() => createTheme(themeSettings(mode)), [mode]);
-  const isAuth = Boolean(useSelector((state) => state.token));
+  initiateSocketConnection();
 
   return (
-    <div className="app">
+    <ThemeProvider theme={theme}>
       <BrowserRouter>
-        <ThemeProvider theme={theme}>
-          <CssBaseline />
-          <Routes>
-            <Route path="/" element={<LoginPage />} />
-            <Route
-              path="/home"
-              element={isAuth ? <HomePage /> : <Navigate to="/" />}
-            />
-            <Route
-              path="/profile/:userId"
-              element={isAuth ? <ProfilePage /> : <Navigate to="/" />}
-            />
-          </Routes>
-        </ThemeProvider>
+        <CssBaseline />
+        <Routes>
+          <Route path="/" element={<ExploreView />} />
+          <Route path="/posts/:id" element={<PostView />} />
+          <Route
+            path="/posts/create"
+            element={
+              <PrivateRoute>
+                <CreatePostView />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/messenger"
+            element={
+              <PrivateRoute>
+                <MessengerView />
+              </PrivateRoute>
+            }
+          />
+          <Route path="/search" element={<SearchView />} />
+          <Route path="/users/:id" element={<ProfileView />} />
+          <Route path="/login" element={<LoginView />} />
+          <Route path="/signup" element={<SignupView />} />
+        </Routes>
       </BrowserRouter>
-    </div>
+    </ThemeProvider>
   );
 }
 
